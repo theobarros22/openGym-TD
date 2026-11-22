@@ -39,8 +39,8 @@ describe('autoLang', () => {
   it('puts DEFAULT_LANG before the browser, the browser before English', () => {
     expect(autoLang(fresh, { default_lang: 'pt-BR' }, ['de-DE'])).toBe('pt-BR')
     expect(autoLang(fresh, { default_lang: 'lt-LT' }, ['de-DE'])).toBe('lt')
-    expect(autoLang(fresh, {}, ['nl-NL', 'de-DE'])).toBe('de')
-    expect(autoLang(fresh, {}, ['nl-NL'])).toBe('en')
+    expect(autoLang(fresh, {}, ['nl-NL', 'de-DE'])).toBe('pt-BR')
+    expect(autoLang(fresh, {}, ['nl-NL'])).toBe('pt-BR')
     expect(autoLang(fresh, { default_lang: 'xx' }, ['fr-FR'])).toBe('fr')
   })
 })

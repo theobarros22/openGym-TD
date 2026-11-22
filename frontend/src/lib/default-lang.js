@@ -35,6 +35,7 @@ export function matchLocale(tag) {
 /** The language a copy that never chose one should be in, or null for a copy that chose. */
 export function autoLang(S, config, navLangs = []) {
   if (!S || S.langAuto !== true) return null
+  if (!config?.default_lang) return 'pt-BR'
   return matchLocale(config?.default_lang)
     || (navLangs || []).map(matchLocale).find(Boolean)
     || 'en'

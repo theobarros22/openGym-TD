@@ -1,0 +1,38 @@
+name: DAYGYM APK
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+      - run: npm ci
+        working-directory: frontend
+      - run: npx vitest run src/lib/default-lang.test.js src/lib/pt-br-locale.test.js
+        working-directory: frontend
+      - run: npm run build && node ../scripts/catalogue/stage-media.mjs dist && npx cap sync android
+        working-directory: frontend
+        env:
+          VITE_MOBILE: '1'
+      - run: chmod +x gradlew && ./gradlew :app:assemblePlayDebug --no-daemon
+        working-directory: frontend/android
+      - name: Publish test APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          APK=$(find frontend/android/app/build/outputs/apk/play/debug -name '*.apk' | head -1)
+          test -n "$APK"
+          cp "$APK" DAYGYM-teste.apk
+          sha256sum DAYGYM-teste.apk > DAYGYM-teste.apk.sha256
+          gh release create "daygym-test-${{ github.run_number }}" DAYGYM-teste.apk DAYGYM-teste.apk.sha256 --prerelease --title 'DAYGYM - versão de testes' --notes 'Primeira versão brasileira do DAYGYM. APK de testes baseado no openGym (AGPL). Compilado automaticamente; validação em aparelho físico pendente. Exporte um backup dos seus dados antes de trocar de versão.'
